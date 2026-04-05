@@ -8,7 +8,8 @@ interface CinemasSectionProps {
 
 export function CinemasSection({ cinemas = [] }: CinemasSectionProps) {
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="cinemas" className="py-16 md:py-24 bg-background">
+
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex items-end justify-between mb-10">

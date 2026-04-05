@@ -58,16 +58,20 @@ export function Header() {
             <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium">
               Trang chủ
             </Link>
-            <Link href="#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Phim đang chiếu
             </Link>
-            <Link href="#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Rạp chiếu
             </Link>
-            <Link href="#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+            <Link href="/#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Khuyến mãi
             </Link>
+            <Link href="/#news" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              Tin tức
+            </Link>
           </nav>
+
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
@@ -203,15 +207,19 @@ export function Header() {
               <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium py-2">
                 Trang chủ
               </Link>
-              <Link href="#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+              <Link href="/#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
                 Phim đang chiếu
               </Link>
-              <Link href="#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+              <Link href="/#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
                 Rạp chiếu
               </Link>
-              <Link href="#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+              <Link href="/#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
                 Khuyến mãi
               </Link>
+              <Link href="/#news" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+                Tin tức
+              </Link>
+
               
               <div className="flex gap-3 pt-4 border-t border-border">
                 {user ? (

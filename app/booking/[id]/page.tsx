@@ -23,13 +23,19 @@ export default async function BookingPage({
   const cinema = typeof sParams.cinema === 'string' ? sParams.cinema : "CineMax"
   const time = typeof sParams.time === 'string' ? sParams.time : "10:00"
   const date = typeof sParams.date === 'string' ? sParams.date : "Hôm nay, 05/04"
+  const basePrice = typeof sParams.price === 'string' ? parseInt(sParams.price) : 80000
 
+  const roomId = typeof sParams.room === 'string' ? sParams.room : ""
+  
   return (
     <BookingClient 
       movie={movie} 
       cinema={cinema} 
       time={time} 
       date={date} 
+      basePrice={basePrice}
+      roomId={roomId}
     />
   )
+
 }

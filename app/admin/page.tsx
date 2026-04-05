@@ -10,10 +10,29 @@ import {
   ArrowUpRight, 
   ArrowDownRight,
   Clock,
-  Loader2
+  Loader2,
+  Download,
+  FileSpreadsheet
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from "recharts"
+import * as XLSX from "xlsx"
+
+const COLORS = ["#f43f5e", "#ec4899", "#d946ef", "#8b5cf6", "#6366f1"]
 
 export default function AdminDashboard() {
   const [data, setData] = useState<any>(null)
@@ -34,6 +53,27 @@ export default function AdminDashboard() {
     fetchStats()
   }, [])
 
+  const exportToExcel = () => {
+    if (!data) return
+    
+    // Prepare data for Excel
+    const reportData = data.recentBookings.map((b: any) => ({
+      "Phim": b.movie,
+      "Khách hàng": b.customerName,
+      "SĐT": b.customerPhone,
+      "Rạp": b.cinema,
+      "Suất chiếu": `${b.time} ${b.date}`,
+      "Ghế": b.seats.join(", "),
+      "Tổng tiền": b.totalPrice,
+      "Ngày đặt": new Date(b.createdAt).toLocaleString("vi-VN")
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(reportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Doanh Thu")
+    XLSX.writeFile(workbook, `Bao_cao_CineMax_${new Date().toISOString().split('T')[0]}.xlsx`)
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -42,18 +82,24 @@ export default function AdminDashboard() {
     )
   }
 
-  const { stats, chartData, recentBookings } = data || {}
+  const { stats, chartData, movieSales, recentBookings } = data || {}
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Chào mừng trở lại, Admin!</h1>
-          <p className="text-muted-foreground">Đây là những gì đang diễn ra với rạp chiếu của bạn hôm nay.</p>
+          <p className="text-muted-foreground">Phân tích chuyên sâu về tình hình kinh doanh của CineMax.</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-bold">
-          <TrendingUp className="h-4 w-4" />
-          <span>+12% Doanh thu tuần này</span>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={exportToExcel} className="gap-2 border-primary/20 hover:bg-primary/5">
+            <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+            Xuất báo cáo Excel
+          </Button>
+          <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-bold">
+            <TrendingUp className="h-4 w-4" />
+            <span>Real-time Analytics</span>
+          </div>
         </div>
       </div>
 
@@ -63,25 +109,25 @@ export default function AdminDashboard() {
           title="Tổng Doanh Thu" 
           value={`${stats.totalRevenue.toLocaleString()}đ`} 
           icon={DollarSign} 
-          trend="+15%" 
+          trend="+15.2%" 
           isPositive={true} 
         />
         <StatsCard 
-          title="Tổng Lượt Đặt" 
+          title="Lượt Đặt Vé" 
           value={stats.totalBookings} 
           icon={Ticket} 
-          trend="+8%" 
+          trend="+8.4%" 
           isPositive={true} 
         />
         <StatsCard 
-          title="Phim Đang Có" 
+          title="Phim Khả Dụng" 
           value={stats.totalMovies} 
           icon={Film} 
           trend="+2" 
           isPositive={true} 
         />
         <StatsCard 
-          title="Người Dùng" 
+          title="Thành Viên" 
           value={stats.totalUsers} 
           icon={Users} 
           trend="+12" 
@@ -95,62 +141,143 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Biểu đồ doanh thu tuần
+              Xu hướng doanh thu (7 ngày)
             </CardTitle>
-            <CardDescription>Dữ liệu doanh thu ước tính trong 7 ngày gần nhất.</CardDescription>
+            <CardDescription>Biểu đồ biến động doanh thu thực tế từ các đơn hàng thành công.</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px] flex items-end justify-between gap-2 pt-8">
-            {chartData.map((d: any, i: number) => {
-              const height = (d.revenue / (stats.totalRevenue || 1)) * 500 // Scale height
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                  <div className="relative w-full flex flex-col items-center justify-end h-full">
-                    <div 
-                      className="w-full max-w-[40px] bg-primary/20 rounded-t-lg group-hover:bg-primary/40 transition-all duration-500 ease-out relative"
-                      style={{ height: `${Math.max(10, height)}%` }}
-                    >
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border px-2 py-1 rounded text-[10px] font-bold whitespace-nowrap shadow-md z-10">
-                            {d.revenue.toLocaleString()}đ
-                        </div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground font-medium uppercase rotate-[-45deg] md:rotate-0 mt-2">
-                    {d.day}
-                  </span>
-                </div>
-              )
-            })}
+          <CardContent className="h-[350px] pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                <XAxis 
+                    dataKey="day" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#888', fontSize: 12}}
+                    dy={10}
+                />
+                <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#888', fontSize: 12}}
+                    tickFormatter={(value) => `${(value/1000000).toFixed(1)}M`}
+                />
+                <Tooltip 
+                    contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
+                    formatter={(value: number) => [`${value.toLocaleString()}đ`, 'Doanh thu']}
+                />
+                <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#f43f5e" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorRev)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Recent Bookings */}
+        {/* Movie Popularity Section */}
         <Card className="bg-card border-border shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              Lượt đặt gần đây
+              <Film className="h-5 w-5 text-primary" />
+              Tỉ lệ phim ăn khách
             </CardTitle>
+            <CardDescription>Cơ cấu doanh thu theo từng bộ phim.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {recentBookings.map((booking: any) => (
-              <div key={booking._id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                    {booking.customerName.charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold truncate">{booking.movie}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{booking.customerName}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-black text-primary">{booking.totalPrice.toLocaleString()}đ</p>
-                  <Badge variant={booking.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[8px] h-4 px-1">
-                    {booking.status === 'cancelled' ? 'Hủy' : 'Xong'}
-                  </Badge>
-                </div>
-              </div>
-            ))}
+          <CardContent className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={movieSales}
+                  cx="50%"
+                  cy="45%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {movieSales.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                    contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px', fontSize: '12px' }}
+                />
+                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{fontSize: '11px', paddingTop: '20px'}} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
+        {/* Recent Bookings Table */}
+        <Card className="bg-card border-border shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle className="text-lg flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                Dòng tiền giao dịch
+                </CardTitle>
+                <CardDescription>Danh sách 8 đơn hàng mới nhất phát sinh trên hệ thống.</CardDescription>
+            </div>
+            <Badge variant="outline" className="h-6">Live Stream</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                    <thead>
+                        <tr className="text-muted-foreground border-b border-border">
+                            <th className="pb-3 font-bold">Khách hàng</th>
+                            <th className="pb-3 font-bold">Bộ phim</th>
+                            <th className="pb-3 font-bold text-center">Ghế</th>
+                            <th className="pb-3 font-bold text-right">Tổng tiền</th>
+                            <th className="pb-3 font-bold text-right">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                        {recentBookings.map((booking: any) => (
+                        <tr key={booking._id} className="group hover:bg-secondary/20 transition-colors">
+                            <td className="py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                        {booking.customerName.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold">{booking.customerName}</p>
+                                        <p className="text-[10px] text-muted-foreground">{booking.customerPhone}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td className="py-4 font-medium max-w-[200px] truncate">{booking.movie}</td>
+                            <td className="py-4 text-center">
+                                <Badge variant="secondary" className="text-[10px] bg-secondary/50 font-mono">
+                                    {booking.seats.length} ghế
+                                </Badge>
+                            </td>
+                            <td className="py-4 text-right font-black text-primary">
+                                {booking.totalPrice.toLocaleString()}đ
+                            </td>
+                            <td className="py-4 text-right">
+                                <Badge variant={booking.status === 'paid' ? 'default' : 'outline'} className={`text-[9px] h-5 px-1.5 ${booking.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-none' : ''}`}>
+                                    {booking.status === 'paid' ? 'Đã thanh toán' : booking.status}
+                                </Badge>
+                            </td>
+                        </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
           </CardContent>
         </Card>
       </div>

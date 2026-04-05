@@ -19,26 +19,55 @@ export async function GET() {
     const totalUsers = await User.countDocuments()
     const totalBookings = await Booking.countDocuments()
 
-    // 2. Revenue calculation
-    const bookings = await Booking.find({ status: { $ne: 'cancelled' } })
+    // 2. Revenue calculation (Actual)
+    const bookings = await Booking.find({ status: 'paid' })
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0)
 
-    // 3. Chart Data (Mocking last 7 days since we don't have enough data yet)
-    // In a real app, we would aggregate by date
-    const chartData = [
-      { day: 'Thứ 2', revenue: totalRevenue * 0.1 },
-      { day: 'Thứ 3', revenue: totalRevenue * 0.15 },
-      { day: 'Thứ 4', revenue: totalRevenue * 0.12 },
-      { day: 'Thứ 5', revenue: totalRevenue * 0.18 },
-      { day: 'Thứ 6', revenue: totalRevenue * 0.22 },
-      { day: 'Thứ 7', revenue: totalRevenue * 0.13 },
-      { day: 'Chủ Nhật', revenue: totalRevenue * 0.1 },
-    ]
+    // 3. Real Revenue Aggregation (Last 7 days)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-    // 4. Recent Bookings
+    const revenueByDay = await Booking.aggregate([
+      { 
+        $match: { 
+          status: 'paid',
+          createdAt: { $gte: sevenDaysAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalPrice" }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ])
+
+    // Format for Chart (Ensuring names like "Thứ 2" etc. or dates)
+    const chartData = revenueByDay.map(d => ({
+        day: new Date(d._id).toLocaleDateString('vi-VN', { weekday: 'short' }),
+        date: d._id,
+        revenue: d.revenue
+    }))
+
+    // 4. Movie Popularity Aggregation (By Seat Count or Booking Count)
+    const movieSales = await Booking.aggregate([
+        { $match: { status: 'paid' } },
+        {
+          $group: {
+            _id: "$movie",
+            value: { $sum: 1 }, // Number of bookings
+            revenue: { $sum: "$totalPrice" }
+          }
+        },
+        { $sort: { revenue: -1 } },
+        { $limit: 5 }
+    ]).then(res => res.map(m => ({ name: m._id, value: m.revenue })))
+
+    // 5. Recent Bookings
     const recentBookings = await Booking.find()
       .sort({ createdAt: -1 })
-      .limit(5)
+      .limit(8)
 
     return NextResponse.json({
       stats: {
@@ -48,6 +77,7 @@ export async function GET() {
         totalRevenue
       },
       chartData,
+      movieSales,
       recentBookings
     })
   } catch (error: any) {

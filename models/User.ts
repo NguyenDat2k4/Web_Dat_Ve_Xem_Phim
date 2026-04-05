@@ -25,6 +25,14 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
+  usedPromotions: {
+    type: [String],
+    default: [],
+  },
+  points: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
 })
@@ -39,4 +47,5 @@ if (mongoose.models.User) {
   mongoose.deleteModel('User')
 }
 
-export default mongoose.model('User', UserSchema)
+const UserModel = mongoose.model('User', UserSchema)
+export default UserModel

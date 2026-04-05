@@ -5,16 +5,12 @@ import { Star, Clock, Calendar, Play, MapPin, Ticket, Info } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { ShowtimeSelector } from "@/components/showtime-selector"
+import { MovieReviews } from "@/components/movie-reviews"
 
 async function getMovie(id: string) {
   const res = await fetch(`http://localhost:3000/api/movies/${id}`, { cache: 'no-store' })
   if (!res.ok) return null
-  return res.json()
-}
-
-async function getCinemas() {
-  const res = await fetch('http://localhost:3000/api/cinemas', { cache: 'no-store' })
-  if (!res.ok) return []
   return res.json()
 }
 
@@ -23,9 +19,14 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
   const movie = await getMovie(id)
   if (!movie) notFound()
 
-  const cinemas = await getCinemas()
+  const getYoutubeId = (url: string) => {
+    if (!url) return ""
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+    const match = url.match(regExp)
+    return (match && match[2].length === 11) ? match[2] : url
+  }
 
-  const showtimes = ["10:00", "12:30", "15:00", "17:30", "20:00", "22:30"]
+  const trailerId = getYoutubeId(movie.trailerUrl)
 
   return (
     <main className="min-h-screen bg-background">
@@ -104,66 +105,31 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                 </p>
               </div>
 
-              <div>
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <Play className="h-6 w-6 text-primary" />
-                  Trailer
-                </h2>
-                <div className="aspect-video bg-secondary rounded-2xl overflow-hidden border border-border shadow-lg group relative">
-                   <iframe 
-                    width="100%" 
-                    height="100%" 
-                    src={`https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0`} 
-                    title="YouTube video player" 
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowFullScreen
-                    className="w-full h-full"
-                   ></iframe>
+              {trailerId && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <Play className="h-6 w-6 text-primary" />
+                    Trailer
+                  </h2>
+                  <div className="aspect-video bg-secondary rounded-2xl overflow-hidden border border-border shadow-lg group relative">
+                    <iframe 
+                      width="100%" 
+                      height="100%" 
+                      src={`https://www.youtube.com/embed/${trailerId}?autoplay=0`} 
+                      title="YouTube video player" 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                      allowFullScreen
+                      className="w-full h-full"
+                    ></iframe>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Right Column: Showtimes */}
+            {/* Right Column: Showtime Selector */}
             <div className="space-y-8">
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <Ticket className="h-6 w-6 text-primary" />
-                  Lịch chiếu
-                </h2>
-                
-                <div className="space-y-8">
-                  {cinemas.map((cinema: any) => (
-                    <div key={cinema._id} className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                        <div>
-                          <h3 className="font-semibold">{cinema.name}</h3>
-                          <p className="text-xs text-muted-foreground">{cinema.address}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        {showtimes.map((time) => (
-                          <Link 
-                            key={time} 
-                            href={`/booking/${movie._id}?cinema=${encodeURIComponent(cinema.name)}&time=${time}&date=${encodeURIComponent("Hôm nay, 05/04")}`}
-                            className="block"
-                          >
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="w-full hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
-                            >
-                              {time}
-                            </Button>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <ShowtimeSelector movieId={movie._id} />
 
               <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
                 <h3 className="font-bold text-primary mb-2">Lưu ý:</h3>
@@ -173,6 +139,13 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section className="py-20 bg-secondary/5 border-t border-border">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <MovieReviews movieId={movie._id} />
         </div>
       </section>
 

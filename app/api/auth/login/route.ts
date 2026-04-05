@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
-    const userData = { id: user._id, name: user.name, email: user.email, role: (user as any).role }
+    const userData = { id: user._id.toString(), name: user.name, email: user.email, role: (user as any).role }
     await login(userData)
 
     return NextResponse.json(userData)

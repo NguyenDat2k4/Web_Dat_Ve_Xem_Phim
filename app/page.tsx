@@ -5,6 +5,7 @@ import { NowPlayingSection } from "@/components/now-playing-section"
 import { ComingSoonSection } from "@/components/coming-soon-section"
 import { CinemasSection } from "@/components/cinemas-section"
 import { PromotionsSection } from "@/components/promotions-section"
+import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
 
 async function getMovies(params: string = "") {
@@ -25,13 +26,20 @@ async function getPromotions() {
   return res.json()
 }
 
+async function getNews() {
+  const res = await fetch('http://localhost:3000/api/news?limit=4', { cache: 'no-store' })
+  if (!res.ok) return []
+  return res.json()
+}
+
 export default async function HomePage() {
-  const [featuredMovies, nowPlayingMovies, comingSoonMovies, cinemas, promotions] = await Promise.all([
+  const [featuredMovies, nowPlayingMovies, comingSoonMovies, cinemas, promotions, news] = await Promise.all([
     getMovies("?featured=true"),
     getMovies("?comingSoon=false"),
     getMovies("?comingSoon=true"),
     getCinemas(),
-    getPromotions()
+    getPromotions(),
+    getNews()
   ])
 
   return (
@@ -43,6 +51,7 @@ export default async function HomePage() {
       <ComingSoonSection movies={comingSoonMovies} />
       <CinemasSection cinemas={cinemas} />
       <PromotionsSection promotions={promotions} />
+      <NewsSection news={news} />
       <Footer />
     </main>
   )

@@ -1,24 +1,45 @@
 import mongoose from 'mongoose'
 
 const PromotionSchema = new mongoose.Schema({
-  title: {
+  code: {
     type: String,
-    required: [true, 'Please provide the promotion title.'],
+    required: [true, 'Please provide a promotion code.'],
+    unique: true,
+    uppercase: true,
+    trim: true,
   },
   description: {
     type: String,
-    required: [true, 'Please provide the description.'],
+    required: [true, 'Please provide a description.'],
   },
-  iconName: {
+  discountType: {
     type: String,
-    required: [true, 'Please provide the icon name (lucide-react).'],
+    enum: ['percentage', 'fixed'],
+    required: [true, 'Please provide a discount type.'],
   },
-  colorClass: {
-    type: String,
-    default: 'bg-primary/20 text-primary',
+  value: {
+    type: Number,
+    required: [true, 'Please provide a discount value.'],
+  },
+  minAmount: {
+    type: Number,
+    default: 0,
+  },
+  expiryDate: {
+    type: Date,
+    required: [true, 'Please provide an expiry date.'],
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
 }, {
   timestamps: true,
 })
 
-export default mongoose.models.Promotion || mongoose.model('Promotion', PromotionSchema)
+// Clear cached model to ensure fresh schema
+if (mongoose.models.Promotion) {
+  mongoose.deleteModel('Promotion')
+}
+
+export default mongoose.model('Promotion', PromotionSchema)

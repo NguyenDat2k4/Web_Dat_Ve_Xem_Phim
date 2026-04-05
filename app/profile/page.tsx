@@ -18,11 +18,23 @@ import {
     ChevronRight, 
     Trash2,
     XCircle,
-    CheckCircle
+    CheckCircle,
+    Coins,
+    Info,
+    QrCode
 } from "lucide-react"
+
 import { toast } from "sonner"
+import { QRCodeSVG } from "qrcode.react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   AlertDialog,
+
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
@@ -38,6 +50,8 @@ export default function ProfilePage() {
   const [isLoadingBookings, setIsLoadingBookings] = useState(true)
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
+  const [selectedTicket, setSelectedTicket] = useState<any>(null)
+
 
   const fetchBookings = async () => {
     setIsLoadingBookings(true)
@@ -128,12 +142,33 @@ export default function ProfilePage() {
                     <span className="text-muted-foreground">Tổng lượt đặt:</span>
                     <span className="font-bold">{bookings.length}</span>
                  </div>
-                 <Button variant="outline" className="w-full justify-start text-sm" disabled>
-                    <User className="h-4 w-4 mr-2" /> Hồ sơ cá nhân
-                 </Button>
-                 <Button variant="ghost" className="w-full justify-start text-sm text-destructive hover:text-destructive hover:bg-destructive/10" disabled>
-                    <Trash2 className="h-4 w-4 mr-2" /> Xóa tài khoản
-                 </Button>
+                 
+                 <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3 mt-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-primary/10 text-primary">
+                            <Coins className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Điểm thưởng</p>
+                            <p className="text-xl font-black text-primary">{(user.points || 0).toLocaleString()} <span className="text-sm font-normal">điểm</span></p>
+                        </div>
+                    </div>
+                    <div className="pt-2 border-t border-primary/10">
+                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Info className="h-3 w-3" />
+                            Đổi điểm khi đạt tối thiểu 10.000 điểm.
+                        </p>
+                    </div>
+                 </div>
+
+                 <div className="pt-4 space-y-2">
+                    <Button variant="outline" className="w-full justify-start text-sm" disabled>
+                        <User className="h-4 w-4 mr-2" /> Hồ sơ cá nhân
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-sm text-destructive hover:text-destructive hover:bg-destructive/10" disabled>
+                        <Trash2 className="h-4 w-4 mr-2" /> Xóa tài khoản
+                    </Button>
+                 </div>
               </CardContent>
             </Card>
           </div>
@@ -192,15 +227,22 @@ export default function ProfilePage() {
                                 
                                 <div className="flex flex-col items-end gap-2">
                                     <Badge 
-                                        variant={booking.status === 'cancelled' ? 'destructive' : 'default'}
+                                        variant={booking.status === 'cancelled' ? 'destructive' : booking.status === 'paid' ? 'default' : 'secondary'}
                                         className="capitalize"
                                     >
                                         {booking.status === 'cancelled' ? (
                                             <><XCircle className="h-3 w-3 mr-1" /> Đã hủy</>
+                                        ) : booking.status === 'paid' ? (
+                                            <><CheckCircle className="h-3 w-3 mr-1" /> Đã thanh toán</>
                                         ) : (
-                                            <><CheckCircle className="h-3 w-3 mr-1" /> Đã xác nhận</>
+                                            <><Clock className="h-3 w-3 mr-1" /> Đã xác nhận</>
                                         )}
                                     </Badge>
+                                    {booking.paymentMethod && (
+                                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest px-2 py-0.5 bg-secondary/50 rounded-full border border-border">
+                                            {booking.paymentMethod}
+                                        </span>
+                                    )}
                                     <span className="text-2xl font-black text-primary">
                                         {booking.totalPrice.toLocaleString('vi-VN')} đ
                                     </span>
@@ -220,15 +262,26 @@ export default function ProfilePage() {
                                 </div>
 
                                 {booking.status !== 'cancelled' && (
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all group"
-                                        onClick={() => setBookingToCancel(booking._id)}
-                                    >
-                                        <XCircle className="h-4 w-4 mr-2" />
-                                        Hủy đặt vé
-                                    </Button>
+                                    <div className="flex gap-2 w-full md:w-auto">
+                                        <Button 
+                                            variant="secondary" 
+                                            size="sm"
+                                            className="bg-primary/20 text-primary border-primary/10 hover:bg-primary/30 transition-all font-bold px-4"
+                                            onClick={() => setSelectedTicket(booking)}
+                                        >
+                                            <QrCode className="h-4 w-4 mr-2" />
+                                            Xem vé
+                                        </Button>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            className="border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all group"
+                                            onClick={() => setBookingToCancel(booking._id)}
+                                        >
+                                            <XCircle className="h-4 w-4 mr-2" />
+                                            Hủy đặt vé
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -240,6 +293,78 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Ticket QR Modal */}
+      <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
+        <DialogContent className="sm:max-w-md bg-card border-border overflow-hidden p-0">
+          {selectedTicket && (
+            <div className="flex flex-col">
+                <div className="bg-primary/10 p-6 text-center border-b border-border">
+                    <DialogHeader className="p-0">
+                        <DialogTitle className="text-2xl font-black text-primary">VÉ ĐIỆN TỬ</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-1 font-bold">
+                        Vui lòng xuất trình mã này tại quầy vé
+                    </p>
+                </div>
+                
+                <div className="p-8 flex flex-col items-center">
+                    <div className="bg-white p-4 rounded-3xl shadow-2xl mb-6 relative group transform hover:scale-105 transition-transform duration-500">
+                        <QRCodeSVG 
+                            value={JSON.stringify({
+                                id: selectedTicket._id,
+                                code: selectedTicket.ticketCode || selectedTicket._id,
+                                movie: selectedTicket.movie
+                            })} 
+                            size={200}
+                            level="H"
+                            includeMargin={false}
+                        />
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl" />
+                    </div>
+                    
+                    <div className="text-center space-y-1 mb-8">
+                        <p className="text-2xl font-black tracking-widest text-foreground">
+                            {selectedTicket.ticketCode || `CMX-${selectedTicket._id.slice(-6).toUpperCase()}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium">Mã vé của bạn</p>
+                    </div>
+
+                    <div className="w-full space-y-4 bg-secondary/30 rounded-2xl p-6 border border-border">
+                        <div className="space-y-1">
+                            <h4 className="font-bold text-lg text-primary">{selectedTicket.movie}</h4>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {selectedTicket.cinema}</span>
+                            </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50 text-sm">
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Thời gian</span>
+                                <p className="font-bold">{selectedTicket.time} • {selectedTicket.date}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Ghế</span>
+                                <p className="font-bold text-primary">{selectedTicket.seats.join(', ')}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="p-6 border-t border-border flex justify-center gap-4 bg-secondary/10">
+                    <Button 
+                        variant="default" 
+                        className="w-full font-bold"
+                        onClick={() => window.print()}
+                    >
+                        Tải ảnh vé
+                    </Button>
+                </div>
+
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Dialog */}
       <AlertDialog open={!!bookingToCancel} onOpenChange={() => setBookingToCancel(null)}>

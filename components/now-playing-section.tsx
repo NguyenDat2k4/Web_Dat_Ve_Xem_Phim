@@ -8,7 +8,8 @@ interface NowPlayingSectionProps {
 
 export function NowPlayingSection({ movies = [] }: NowPlayingSectionProps) {
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="now-playing" className="py-16 md:py-24 bg-background">
+
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex items-end justify-between mb-10">

@@ -29,7 +29,8 @@ export default function CinemaManagementPage() {
       address: "",
       phone: "",
       email: "",
-      openTime: "08:00 - 23:00"
+      openTime: "08:00 - 23:00",
+      image: ""
   })
 
   const fetchCinemas = async () => {
@@ -55,7 +56,8 @@ export default function CinemaManagementPage() {
       address: cinema.address,
       phone: cinema.phone || "",
       email: cinema.email || "",
-      openTime: cinema.openTime || "08:00 - 23:00"
+      openTime: cinema.openTime || "08:00 - 23:00",
+      image: cinema.image || ""
     })
     setIsDialogOpen(true)
   }
@@ -96,7 +98,8 @@ export default function CinemaManagementPage() {
         setIsDialogOpen(false)
         fetchCinemas()
       } else {
-        toast.error("Vui lòng nhập đầy đủ các trường")
+        const data = await res.json()
+        toast.error(data.error || "Thao tác thất bại")
       }
     } catch (error) {
       toast.error("Lỗi kết nối server")
@@ -128,7 +131,7 @@ export default function CinemaManagementPage() {
         <Button onClick={() => {
             setEditingCinema(null)
             setFormData({
-                name: "", address: "", phone: "", email: "", openTime: "08:00 - 23:00"
+                name: "", address: "", phone: "", email: "", openTime: "08:00 - 23:00", image: ""
             })
             setIsDialogOpen(true)
         }}>
@@ -216,10 +219,14 @@ export default function CinemaManagementPage() {
                     <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="contact@cinemax.vn" />
                 </div>
             </div>
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Giờ mở cửa</label>
-                <Input value={formData.openTime} onChange={e => setFormData({...formData, openTime: e.target.value})} placeholder="08:00 - 23:00" />
-            </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Link ảnh cơ sở (Banner)</label>
+                    <Input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} required placeholder="https://..." />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Giờ mở cửa</label>
+                    <Input value={formData.openTime} onChange={e => setFormData({...formData, openTime: e.target.value})} placeholder="08:00 - 23:00" />
+                </div>
 
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Hủy</Button>

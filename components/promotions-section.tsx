@@ -13,7 +13,8 @@ interface PromotionsSectionProps {
 
 export function PromotionsSection({ promotions = [] }: PromotionsSectionProps) {
   return (
-    <section className="py-16 md:py-24 bg-secondary/30">
+    <section id="promotions" className="py-16 md:py-24 bg-secondary/30">
+
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex items-end justify-between mb-10">

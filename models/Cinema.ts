@@ -9,6 +9,16 @@ const CinemaSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide the cinema address.'],
   },
+  phone: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  openTime: {
+    type: String,
+    default: "08:00 - 23:00",
+  },
   image: {
     type: String,
     required: [true, 'Please provide an image URL for the cinema.'],

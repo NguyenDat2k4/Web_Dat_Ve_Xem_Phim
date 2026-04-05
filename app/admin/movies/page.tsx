@@ -33,6 +33,7 @@ export default function MovieManagementPage() {
       description: "",
       isComingSoon: false,
       releaseDate: "",
+      trailerUrl: "",
       featured: false
   })
 
@@ -63,6 +64,7 @@ export default function MovieManagementPage() {
       description: movie.description,
       isComingSoon: movie.isComingSoon || false,
       releaseDate: movie.releaseDate || "",
+      trailerUrl: movie.trailerUrl || "",
       featured: movie.featured || false
     })
     setIsDialogOpen(true)
@@ -135,7 +137,7 @@ export default function MovieManagementPage() {
         <Button onClick={() => {
             setEditingMovie(null)
             setFormData({
-                title: "", image: "", rating: 0, duration: "", genre: "", description: "", isComingSoon: false, releaseDate: "", featured: false
+                title: "", image: "", rating: 0, duration: "", genre: "", description: "", isComingSoon: false, releaseDate: "", trailerUrl: "", featured: false
             })
             setIsDialogOpen(true)
         }}>
@@ -226,6 +228,10 @@ export default function MovieManagementPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Ngày phát hành</label>
                 <Input value={formData.releaseDate} onChange={e => setFormData({...formData, releaseDate: e.target.value})} placeholder="DD/MM/YYYY" />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <label className="text-sm font-medium">Link Trailer (YouTube)</label>
+                <Input value={formData.trailerUrl} onChange={e => setFormData({...formData, trailerUrl: e.target.value})} placeholder="https://www.youtube.com/watch?v=..." />
               </div>
             </div>
             

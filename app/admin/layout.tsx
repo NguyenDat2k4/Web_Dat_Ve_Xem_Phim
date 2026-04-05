@@ -11,8 +11,14 @@ import {
   Settings, 
   LogOut, 
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Calendar,
+  Ticket,
+  Newspaper,
+  Layout,
+  Soup
 } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 
@@ -25,10 +31,18 @@ export default function AdminLayout({
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    setIsMounted(true)
+    const timer = setTimeout(() => setIsMounted(true), 0)
+    return () => clearTimeout(timer)
   }, [])
 
-  if (isLoading || !isMounted) {
+
+  useEffect(() => {
+    if (isMounted && !isLoading && (!user || user.role !== 'admin')) {
+      redirect("/")
+    }
+  }, [isMounted, user, isLoading])
+
+  if (isLoading || !isMounted || !user) {
     return (
         <div className="min-h-screen bg-background flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -36,15 +50,19 @@ export default function AdminLayout({
     )
   }
 
-  if (!user || user.role !== 'admin') {
-    redirect("/")
-  }
-
   const menuItems = [
     { icon: LayoutDashboard, label: "Tổng quan", href: "/admin" },
+    { icon: Ticket, label: "Quản lý Đơn vé", href: "/admin/bookings" },
     { icon: Film, label: "Quản lý Phim", href: "/admin/movies" },
+    { icon: Layout, label: "Quản lý Phòng", href: "/admin/rooms" },
     { icon: MapPin, label: "Quản lý Rạp", href: "/admin/cinemas" },
+    { icon: Calendar, label: "Lịch chiếu", href: "/admin/showtimes" },
     { icon: Users, label: "Người dùng", href: "/admin/users" },
+    { icon: Ticket, label: "Khuyến mãi", href: "/admin/promotions" },
+    { icon: Newspaper, label: "Quản lý Tin tức", href: "/admin/news" },
+    { icon: Soup, label: "Quản lý Combo", href: "/admin/combos" },
+
+
   ]
 
   return (
@@ -104,3 +122,4 @@ export default function AdminLayout({
     </div>
   )
 }
+
