@@ -14,6 +14,14 @@ const MovieSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  numReviews: {
+    type: Number,
+    default: 0,
+  },
+  totalRatingValue: {
+    type: Number,
+    default: 0,
+  },
   duration: {
     type: String,
     required: [true, 'Please provide the duration (e.g., 120 mins)'],
@@ -21,6 +29,10 @@ const MovieSchema = new mongoose.Schema({
   genre: {
     type: String,
     required: [true, 'Please provide the genre'],
+  },
+  trailerUrl: {
+    type: String,
+    default: "",
   },
   description: {
     type: String,
@@ -41,4 +53,10 @@ const MovieSchema = new mongoose.Schema({
   timestamps: true,
 })
 
-export default mongoose.models.Movie || mongoose.model('Movie', MovieSchema)
+// Clear cached model to ensure fresh schema
+if (mongoose.models.Movie) {
+  mongoose.deleteModel('Movie')
+}
+
+const MovieModel = mongoose.model('Movie', MovieSchema)
+export default MovieModel

@@ -39,11 +39,57 @@ const BookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled'],
+    enum: ['pending', 'confirmed', 'cancelled', 'paid'],
     default: 'confirmed',
   },
+  paymentMethod: {
+    type: String,
+    default: '',
+  },
+  pointsUsed: {
+    type: Number,
+    default: 0,
+  },
+  combos: [{
+    name: String,
+    price: Number,
+    quantity: Number
+  }],
+  ticketCode: {
+    type: String,
+    unique: true
+  },
+  paymentId: {
+    type: String,
+    default: ''
+  },
+  checkInStatus: {
+    type: Boolean,
+    default: false
+  },
+  checkInAt: {
+    type: Date
+  },
+  isGift: {
+    type: Boolean,
+    default: false
+  },
+  recipientName: String,
+  recipientEmail: String,
+  giftMessage: String,
+  giftTemplate: String,
+  isMystery: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true,
 })
+
+
+// Clear cached model to ensure fresh schema
+if (mongoose.models.Booking) {
+  mongoose.deleteModel('Booking')
+}
 
 export default mongoose.models.Booking || mongoose.model('Booking', BookingSchema)
