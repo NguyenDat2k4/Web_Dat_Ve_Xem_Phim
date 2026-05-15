@@ -1,0 +1,35 @@
+services:
+  # Next.js App
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+    networks:
+      - cinemax-network
+
+  # Socket.io Server
+  socket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: node socket-server.js
+    restart: always
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+    networks:
+      - cinemax-network
+
+networks:
+  cinemax-network:
+    driver: bridge
