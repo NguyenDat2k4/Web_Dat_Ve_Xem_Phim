@@ -32,6 +32,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Block cancellation for mystery tickets
+    if (booking.isMystery) {
+        return NextResponse.json({ error: 'Vé bí ẩn không hỗ trợ hoàn tiền hoặc hủy.' }, { status: 400 })
+    }
+
     booking.status = 'cancelled'
     await booking.save()
 
