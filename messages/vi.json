@@ -1,0 +1,25 @@
+{
+  "Header": {
+    "home": "Trang chủ",
+    "movies": "Phim",
+    "nowPlaying": "Phim đang chiếu",
+    "cinemas": "Rạp chiếu",
+    "promotions": "Khuyến mãi",
+    "news": "Tin tức",
+    "searchPlaceholder": "Tìm kiếm phim...",
+    "searching": "Đang tìm kiếm...",
+    "noMoviesFound": "Không tìm thấy phim nào",
+    "personalAccount": "Tài khoản cá nhân",
+    "adminPage": "Trang quản trị",
+    "bookingHistory": "Lịch sử đặt vé",
+    "favoriteMovies": "Phim yêu thích",
+    "logout": "Đăng xuất",
+    "login": "Đăng nhập",
+    "register": "Đăng ký"
+  },
+  "HeroSection": {
+    "featuredMovie": "Phim nổi bật",
+    "bookNow": "Đặt vé ngay",
+    "watchTrailer": "Xem trailer"
+  }
+}

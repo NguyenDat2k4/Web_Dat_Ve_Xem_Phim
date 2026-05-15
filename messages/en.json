@@ -1,0 +1,25 @@
+{
+  "Header": {
+    "home": "Home",
+    "movies": "Movies",
+    "nowPlaying": "Now Playing",
+    "cinemas": "Cinemas",
+    "promotions": "Promotions",
+    "news": "News",
+    "searchPlaceholder": "Search movies...",
+    "searching": "Searching...",
+    "noMoviesFound": "No movies found",
+    "personalAccount": "Personal Account",
+    "adminPage": "Admin Page",
+    "bookingHistory": "Booking History",
+    "favoriteMovies": "Favorite Movies",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "HeroSection": {
+    "featuredMovie": "Featured",
+    "bookNow": "Book Now",
+    "watchTrailer": "Watch Trailer"
+  }
+}
