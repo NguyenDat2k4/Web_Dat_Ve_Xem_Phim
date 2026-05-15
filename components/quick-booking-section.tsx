@@ -2,25 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { MapPin, Film, Calendar, Clock, Search, Loader2, CheckCircle2 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/context/AuthContext"
-
-const dates = [
-  "Hôm nay, 05/04",
-  "Thứ 2, 06/04",
-  "Thứ 3, 07/04",
-  "Thứ 4, 08/04",
-  "Thứ 5, 09/04"
-]
-
-const times = [
-  "10:00",
-  "12:30",
-  "15:00",
-  "17:30",
-  "20:00",
-  "22:30"
-]
+import { toast } from "sonner"
 
 interface QuickBookingSectionProps {
   cinemas: any[]
@@ -33,12 +17,50 @@ export function QuickBookingSection({ cinemas = [], movies = [] }: QuickBookingS
   const [selectedMovie, setSelectedMovie] = useState("")
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedTime, setSelectedTime] = useState("")
+  const [availableShowtimes, setAvailableShowtimes] = useState<any[]>([])
+  const [isLoadingShowtimes, setIsLoadingShowtimes] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
+  // Fetch showtimes when cinema + movie are selected
+  useEffect(() => {
+    const fetchShowtimes = async () => {
+      if (!selectedCinema || !selectedMovie) {
+        setAvailableShowtimes([])
+        return
+      }
+
+      setIsLoadingShowtimes(true)
+      try {
+        const cinemaObj = cinemas.find((c: any) => c.name === selectedCinema)
+        const movieObj = movies.find((m: any) => m.title === selectedMovie)
+        
+        if (cinemaObj && movieObj) {
+          const res = await fetch(`/api/showtimes?movieId=${movieObj._id}&cinemaId=${cinemaObj._id}`)
+          const data = await res.json()
+          setAvailableShowtimes(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch showtimes:", error)
+      } finally {
+        setIsLoadingShowtimes(false)
+      }
+    }
+    fetchShowtimes()
+  }, [selectedCinema, selectedMovie, cinemas, movies])
+
+  // Derive unique dates and times
+  const uniqueDates = Array.isArray(availableShowtimes) 
+    ? Array.from(new Set(availableShowtimes.map(st => st.date))).sort()
+    : []
+  const currentShowtime = Array.isArray(availableShowtimes)
+    ? availableShowtimes.find(st => st.date === selectedDate)
+    : null
+  const availableTimes = currentShowtime ? currentShowtime.times : []
+
   const handleBooking = async () => {
     if (!selectedCinema || !selectedMovie || !selectedDate || !selectedTime) {
-      alert("Vui lòng chọn đầy đủ thông tin")
+      toast.error("Vui lòng chọn đầy đủ thông tin")
       return
     }
 
@@ -52,13 +74,16 @@ export function QuickBookingSection({ cinemas = [], movies = [] }: QuickBookingS
           movie: selectedMovie,
           date: selectedDate,
           time: selectedTime,
-          userEmail: user?.email || ''
+          customerName: user?.name || "Người dùng",
+          customerEmail: user?.email || "guest@cinemax.vn",
+          userEmail: user?.email || '',
+          totalPrice: currentShowtime?.price || 80000
         })
       })
 
       if (response.ok) {
         setIsSuccess(true)
-        // Reset form after 3 seconds
+        toast.success("Đặt vé thành công!")
         setTimeout(() => {
           setIsSuccess(false)
           setSelectedCinema("")
@@ -67,17 +92,17 @@ export function QuickBookingSection({ cinemas = [], movies = [] }: QuickBookingS
           setSelectedTime("")
         }, 3000)
       } else {
-        alert("Có lỗi xảy ra khi đặt vé. Vui lòng thử lại.")
+        toast.error("Có lỗi xảy ra khi đặt vé. Vui lòng thử lại.")
       }
     } catch (error) {
-      alert("Lỗi kết nối server")
+      toast.error("Lỗi kết nối server")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <section className="py-12 bg-card border-y border-border">
+    <section className="py-12 bg-card border-y border-border" id="quick-booking">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
@@ -105,12 +130,17 @@ export function QuickBookingSection({ cinemas = [], movies = [] }: QuickBookingS
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <select
+                    title="Chọn rạp chiếu"
                     value={selectedCinema}
-                    onChange={(e) => setSelectedCinema(e.target.value)}
+                    onChange={(e) => {
+                        setSelectedCinema(e.target.value)
+                        setSelectedDate("")
+                        setSelectedTime("")
+                    }}
                     className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground appearance-none cursor-pointer hover:border-primary/50 focus:border-primary focus:outline-none transition-colors"
                   >
                     <option value="">Chọn rạp</option>
-                    {cinemas.map((cinema) => (
+                    {cinemas.map((cinema: any) => (
                       <option key={cinema._id || cinema.id} value={cinema.name}>{cinema.name}</option>
                     ))}
                   </select>
@@ -125,12 +155,17 @@ export function QuickBookingSection({ cinemas = [], movies = [] }: QuickBookingS
                 <div className="relative">
                   <Film className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <select
+                    title="Chọn phim"
                     value={selectedMovie}
-                    onChange={(e) => setSelectedMovie(e.target.value)}
+                    onChange={(e) => {
+                        setSelectedMovie(e.target.value)
+                        setSelectedDate("")
+                        setSelectedTime("")
+                    }}
                     className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground appearance-none cursor-pointer hover:border-primary/50 focus:border-primary focus:outline-none transition-colors"
                   >
                     <option value="">Chọn phim</option>
-                    {movies.map((movie) => (
+                    {movies.map((movie: any) => (
                       <option key={movie._id || movie.id} value={movie.title}>{movie.title}</option>
                     ))}
                   </select>
@@ -145,12 +180,17 @@ export function QuickBookingSection({ cinemas = [], movies = [] }: QuickBookingS
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <select
+                    title="Chọn ngày chiếu"
                     value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground appearance-none cursor-pointer hover:border-primary/50 focus:border-primary focus:outline-none transition-colors"
+                    onChange={(e) => {
+                        setSelectedDate(e.target.value)
+                        setSelectedTime("")
+                    }}
+                    disabled={uniqueDates.length === 0}
+                    className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground appearance-none cursor-pointer hover:border-primary/50 focus:border-primary focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <option value="">Chọn ngày</option>
-                    {dates.map((date) => (
+                    <option value="">{isLoadingShowtimes ? "Đang tải..." : "Chọn ngày"}</option>
+                    {uniqueDates.map((date: any) => (
                       <option key={date} value={date}>{date}</option>
                     ))}
                   </select>
@@ -165,13 +205,15 @@ export function QuickBookingSection({ cinemas = [], movies = [] }: QuickBookingS
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <select
+                    title="Chọn suất chiếu"
                     value={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground appearance-none cursor-pointer hover:border-primary/50 focus:border-primary focus:outline-none transition-colors"
+                    disabled={availableTimes.length === 0}
+                    className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg text-foreground appearance-none cursor-pointer hover:border-primary/50 focus:border-primary focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Chọn giờ</option>
-                    {times.map((time) => (
-                      <option key={time} value={time}>{time}</option>
+                    {availableTimes.map((time: string) => (
+                      <option key={time} value={time}>{time} - {currentShowtime?.price.toLocaleString()}đ</option>
                     ))}
                   </select>
                 </div>

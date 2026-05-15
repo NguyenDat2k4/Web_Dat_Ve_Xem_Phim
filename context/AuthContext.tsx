@@ -8,6 +8,11 @@ export interface User {
   name: string
   email: string
   role: string
+  points?: number
+  rank?: string
+  totalSpent?: number
+  watchlist?: string[]
+  notifications?: any[]
 }
 
 interface AuthContextType {
@@ -35,16 +40,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await fetch("/api/auth/me")
       const data = await res.json()
-      if (data.user) {
-        setUser(data.user)
-      } else {
-        setUser(null)
+      if (isMounted) {
+        if (data.user) {
+          setUser(data.user)
+        } else {
+          setUser(null)
+        }
       }
     } catch (error) {
       console.error("Auth check failed:", error)
-      setUser(null)
+      if (isMounted) setUser(null)
     } finally {
-      setIsLoading(false)
+      if (isMounted) setIsLoading(false)
     }
   }
 

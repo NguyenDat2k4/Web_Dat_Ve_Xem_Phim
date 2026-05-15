@@ -1,7 +1,12 @@
+"use client"
+
 import Image from "next/image"
-import Link from "next/link"
+import { Link } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
-import { Star, Clock, Play } from "lucide-react"
+import { Star, Clock, Play, Heart } from "lucide-react"
+import { useState } from "react"
+import { useAuth } from "@/context/AuthContext"
+import { toast } from "sonner"
 
 interface MovieCardProps {
   id?: string
@@ -27,14 +32,50 @@ export function MovieCard({
   releaseDate 
 }: MovieCardProps) {
   const movieId = _id || id
+  const { user, refreshUser } = useAuth()
+  const [isToggling, setIsToggling] = useState(false)
+  
+  const isInWatchlist = user?.watchlist?.includes(movieId as string)
+
+  const toggleWatchlist = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để yêu thích phim")
+      return
+    }
+
+    setIsToggling(true)
+    try {
+      const res = await fetch("/api/user/watchlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ movieId })
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(data.message)
+        await refreshUser()
+      }
+    } catch (error) {
+      toast.error("Đã có lỗi xảy ra")
+    } finally {
+      setIsToggling(false)
+    }
+  }
+
+  const fallbackImage = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80"
+  const imageSrc = image || fallbackImage
+  const durationStr = typeof duration === 'number' ? `${duration} phút` : duration
 
   return (
     <div className="group relative bg-card rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
       {/* Poster */}
       <Link href={`/movie/${movieId}`} className="relative aspect-[2/3] block overflow-hidden">
         <Image
-          src={image}
-          alt={title}
+          src={imageSrc}
+          alt={title || "Poster phim"}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
@@ -43,17 +84,25 @@ export function MovieCard({
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Rating Badge */}
-        <div className="absolute top-3 right-3 flex items-center gap-1 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1">
+        <div className="absolute top-3 right-3 flex items-center gap-1 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 z-10">
           <Star className="h-3 w-3 text-accent fill-accent" />
           <span className="text-xs font-semibold text-foreground">{rating}</span>
         </div>
 
-        {/* Coming Soon Badge */}
-        {isComingSoon && (
-          <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded-full">
-            Sắp chiếu
-          </div>
-        )}
+        {/* Watchlist Heart */}
+        <button 
+          onClick={toggleWatchlist}
+          disabled={isToggling}
+          aria-label={isInWatchlist ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
+          title={isInWatchlist ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
+          className={`absolute top-3 left-3 p-2 rounded-full backdrop-blur-sm transition-all z-10 ${
+            isInWatchlist 
+              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+              : "bg-background/80 text-foreground hover:bg-primary hover:text-primary-foreground"
+          }`}
+        >
+          <Heart className={`h-4 w-4 ${isInWatchlist ? "fill-current" : ""}`} />
+        </button>
 
         {/* Play Button Overlay */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -74,7 +123,7 @@ export function MovieCard({
         <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
           <div className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
-            <span>{duration}</span>
+            <span>{durationStr}</span>
           </div>
           <span className="w-1 h-1 rounded-full bg-muted-foreground" />
           <span className="truncate">{genre}</span>
@@ -86,7 +135,7 @@ export function MovieCard({
           </div>
         ) : (
           <Link href={`/movie/${movieId}`} className="block">
-            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold">
               Đặt vé
             </Button>
           </Link>

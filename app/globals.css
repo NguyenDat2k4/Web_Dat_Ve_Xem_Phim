@@ -74,6 +74,51 @@
   --sidebar-ring: oklch(0.65 0.24 25);
 }
 
+.marvel-theme {
+  --background: oklch(0.15 0.05 25);
+  --foreground: oklch(0.98 0.01 25);
+  --card: oklch(0.18 0.06 25);
+  --card-foreground: oklch(0.98 0.01 25);
+  --primary: oklch(0.55 0.22 25); /* Marvel Red */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.75 0.15 70); /* Gold */
+  --secondary-foreground: oklch(0.15 0.05 25);
+  --accent: oklch(0.45 0.18 250); /* Deep Blue */
+  --accent-foreground: oklch(1 0 0);
+  --border: oklch(0.3 0.08 25);
+  --ring: oklch(0.55 0.22 25);
+}
+
+.avatar-theme {
+  --background: oklch(0.12 0.04 220);
+  --foreground: oklch(0.98 0.02 180);
+  --card: oklch(0.15 0.05 220);
+  --card-foreground: oklch(0.98 0.02 180);
+  --primary: oklch(0.6 0.15 180); /* Teal/Cyan */
+  --primary-foreground: oklch(0.12 0.04 220);
+  --secondary: oklch(0.35 0.1 220); /* Deep Water Blue */
+  --secondary-foreground: oklch(0.98 0.02 180);
+  --accent: oklch(0.85 0.2 140); /* Bioluminescent Green */
+  --accent-foreground: oklch(0.12 0.04 220);
+  --border: oklch(0.25 0.06 220);
+  --ring: oklch(0.6 0.15 180);
+}
+
+.horror-theme {
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.9 0.02 20);
+  --card: oklch(0.1 0 0);
+  --card-foreground: oklch(0.9 0.02 20);
+  --primary: oklch(0.4 0.18 25); /* Blood Red */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.15 0.01 260); /* Cold Grey */
+  --secondary-foreground: oklch(0.9 0.02 20);
+  --accent: oklch(0.25 0.05 0); /* Dark Rust */
+  --accent-foreground: oklch(1 0 0);
+  --border: oklch(0.15 0.02 20);
+  --ring: oklch(0.4 0.18 25);
+}
+
 @theme inline {
   --font-sans: 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
@@ -121,5 +166,16 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .netflix-number {
+    -webkit-text-stroke: 4px var(--foreground);
+    color: var(--background);
+  }
+
+  .mouse-glow-effect {
+    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 0, 0, 0.15), transparent 50%);
   }
 }

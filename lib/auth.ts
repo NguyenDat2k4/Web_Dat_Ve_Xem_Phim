@@ -37,7 +37,36 @@ export async function logout() {
 export async function getSession() {
   const session = (await cookies()).get('session')?.value
   if (!session) return null
-  return await decrypt(session)
+  try {
+    const parsed = await decrypt(session)
+    
+    // Extremely robust normalization for user ID
+    if (parsed?.user?.id) {
+      const id = parsed.user.id
+      if (typeof id === 'string') {
+        parsed.user.id = id
+      } else if (typeof id === 'object') {
+        // Handle Mongoose ObjectId serialized as { buffer: { '0': ... } }
+        if (id.buffer && typeof id.buffer === 'object') {
+          const bufferValues = Object.values(id.buffer) as number[]
+          if (bufferValues.length === 12) {
+            parsed.user.id = bufferValues
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join('')
+          } else {
+            parsed.user.id = id.toString()
+          }
+        } else {
+          parsed.user.id = id.toString()
+        }
+      }
+    }
+    
+    return parsed
+  } catch (e) {
+    console.error("Session decryption/normalization failed:", e)
+    return null
+  }
 }
 
 export async function updateSession(request: NextRequest) {

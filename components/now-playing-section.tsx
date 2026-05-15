@@ -1,6 +1,8 @@
 import { MovieCard } from "@/components/movie-card"
+import { MysteryMovieCard } from "@/components/mystery-movie-card"
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
+import { Link } from "@/i18n/routing"
 
 interface NowPlayingSectionProps {
   movies: any[]
@@ -8,7 +10,8 @@ interface NowPlayingSectionProps {
 
 export function NowPlayingSection({ movies = [] }: NowPlayingSectionProps) {
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="now-playing" className="py-16 md:py-24 bg-background">
+
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex items-end justify-between mb-10">
@@ -20,14 +23,19 @@ export function NowPlayingSection({ movies = [] }: NowPlayingSectionProps) {
               Khám phá những bộ phim hot nhất hiện nay
             </p>
           </div>
-          <Button variant="ghost" className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/90 hover:bg-primary/10">
-            Xem tất cả
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <Link href="/movie?status=now-playing">
+            <Button variant="ghost" className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/90 hover:bg-primary/10">
+              Xem tất cả
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
 
         {/* Movie Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
+          {/* Mystery Ticket Featured Card */}
+          <MysteryMovieCard />
+
           {movies.map((movie) => (
             <MovieCard
               key={movie._id || movie.id}

@@ -1,11 +1,19 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+ 
+const withNextIntl = createNextIntlPlugin();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    // Để đảm bảo chất lượng production, ta nên fix hết lỗi thay vì ignore
+    ignoreBuildErrors: false,
   },
+  output: 'standalone',
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' },
+    ],
   },
 }
 
-export default nextConfig
+export default withNextIntl(nextConfig);

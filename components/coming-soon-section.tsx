@@ -1,6 +1,7 @@
 import { MovieCard } from "@/components/movie-card"
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
+import { Link } from "@/i18n/routing"
 
 interface ComingSoonSectionProps {
   movies: any[]
@@ -20,10 +21,12 @@ export function ComingSoonSection({ movies = [] }: ComingSoonSectionProps) {
               Đừng bỏ lỡ những bộ phim hấp dẫn sắp ra mắt
             </p>
           </div>
-          <Button variant="ghost" className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/90 hover:bg-primary/10">
-            Xem tất cả
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <Link href="/movie?status=coming-soon">
+            <Button variant="ghost" className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/90 hover:bg-primary/10">
+              Xem tất cả
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
 
         {/* Movie Grid */}

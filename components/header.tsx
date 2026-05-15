@@ -1,11 +1,16 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "@/i18n/routing"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Search, User as UserIcon, Menu, X, LogOut, ChevronDown } from "lucide-react"
+import { Search, User as UserIcon, Menu, X, LogOut, ChevronDown, Heart } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { AuthModal } from "./auth-modal"
+import { ThemeSwitcher } from "./theme-switcher"
+import { NotificationBell } from "./notification-bell"
+import { LanguageSwitcher } from "./language-switcher"
+import { useTranslations } from "next-intl"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function Header() {
+  const t = useTranslations('Header')
   const { user, logout, isLoading } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
@@ -56,18 +62,25 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium">
-              Trang chủ
+              {t('home')}
             </Link>
-            <Link href="#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-              Phim đang chiếu
+            <Link href="/movie" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              {t('movies')}
             </Link>
-            <Link href="#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-              Rạp chiếu
+            <Link href="/#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              {t('nowPlaying')}
             </Link>
-            <Link href="#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-              Khuyến mãi
+            <Link href="/#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              {t('cinemas')}
+            </Link>
+            <Link href="/#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              {t('promotions')}
+            </Link>
+            <Link href="/#news" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+              {t('news')}
             </Link>
           </nav>
+
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
@@ -77,7 +90,7 @@ export function Header() {
                 <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Tìm kiếm phim..."
+                  placeholder={t('searchPlaceholder')}
                   className="bg-secondary/50 border border-border rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
@@ -89,7 +102,7 @@ export function Header() {
                 <div className="absolute top-full right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2">
                   {isSearching ? (
                     <div className="p-4 text-center text-muted-foreground text-sm">
-                      Đang tìm kiếm...
+                      {t('searching')}
                     </div>
                   ) : searchResults.length > 0 ? (
                     <div className="p-2 space-y-1">
@@ -101,7 +114,13 @@ export function Header() {
                           className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary transition-colors group"
                         >
                           <div className="relative w-10 h-14 rounded overflow-hidden shrink-0">
-                            <img src={movie.image} alt={movie.title} className="object-cover w-full h-full" />
+                            <Image 
+                              src={movie.image || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=200&q=80"} 
+                              alt={movie.title || "Movie Thumbnail"} 
+                              fill
+                              className="object-cover" 
+                              unoptimized
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{movie.title}</p>
@@ -112,7 +131,7 @@ export function Header() {
                     </div>
                   ) : (
                     <div className="p-4 text-center text-muted-foreground text-sm">
-                      Không tìm thấy phim nào
+                      {t('noMoviesFound')}
                     </div>
                   )}
                 </div>
@@ -122,11 +141,19 @@ export function Header() {
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-secondary animate-pulse" />
             ) : user ? (
-              <DropdownMenu>
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <ThemeSwitcher />
+                <NotificationBell />
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 gap-2 px-2 hover:bg-secondary">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
-                      <UserIcon className="h-4 w-4" />
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <UserIcon className="h-4 w-4" />
+                      )}
                     </div>
                     <span className="font-semibold text-sm max-w-[100px] truncate">{user.name}</span>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -141,45 +168,54 @@ export function Header() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="cursor-pointer hover:bg-secondary">
-                    Tài khoản cá nhân
+                    {t('personalAccount')}
                   </DropdownMenuItem>
-                  {user?.role === 'admin' && (
+                  {(user?.role === 'admin' || user?.role === 'staff') && (
                     <Link href="/admin">
                       <DropdownMenuItem className="cursor-pointer text-primary font-bold hover:bg-primary/10">
-                        Quản trị hệ thống
+                        {t('adminPage')}
                       </DropdownMenuItem>
                     </Link>
                   )}
                   <Link href="/profile">
                     <DropdownMenuItem className="cursor-pointer hover:bg-secondary">
-                      Lịch sử đặt vé
+                      {t('bookingHistory')}
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuSeparator />
+                    <Link href="/profile/watchlist">
+                      <DropdownMenuItem className="cursor-pointer hover:bg-secondary">
+                        <Heart className="mr-2 h-4 w-4" />
+                        {t('favoriteMovies')}
+                      </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     className="cursor-pointer text-destructive focus:text-destructive hover:bg-destructive/10"
                     onClick={logout}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Đăng xuất
+                    {t('logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+                </DropdownMenu>
+              </div>
             ) : (
               <div className="flex items-center gap-3">
+                <LanguageSwitcher />
+                <ThemeSwitcher />
                 <Button 
                     variant="outline" 
                     className="border-border text-foreground hover:bg-secondary"
                     onClick={() => setIsAuthModalOpen(true)}
                 >
                   <UserIcon className="h-4 w-4 mr-2" />
-                  Đăng nhập
+                  {t('login')}
                 </Button>
                 <Button 
                     className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
                     onClick={() => setIsAuthModalOpen(true)}
                 >
-                  Đăng ký
+                  {t('register')}
                 </Button>
               </div>
             )}
@@ -201,23 +237,30 @@ export function Header() {
           <div className="md:hidden py-4 border-t border-border animate-in slide-in-from-top-2 duration-200">
             <nav className="flex flex-col gap-4">
               <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium py-2">
-                Trang chủ
+                {t('home')}
               </Link>
-              <Link href="#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
-                Phim đang chiếu
+              <Link href="/movie" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+                {t('movies')}
               </Link>
-              <Link href="#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
-                Rạp chiếu
+              <Link href="/#now-playing" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+                {t('nowPlaying')}
               </Link>
-              <Link href="#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
-                Khuyến mãi
+              <Link href="/#cinemas" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+                {t('cinemas')}
               </Link>
+              <Link href="/#promotions" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+                {t('promotions')}
+              </Link>
+              <Link href="/#news" className="text-muted-foreground hover:text-primary transition-colors font-medium py-2">
+                {t('news')}
+              </Link>
+
               
               <div className="flex gap-3 pt-4 border-t border-border">
                 {user ? (
                    <Button variant="ghost" className="flex-1 justify-start gap-2" onClick={logout}>
                      <LogOut className="h-4 w-4" />
-                     Đăng xuất ({user.name})
+                     {t('logout')} ({user.name})
                    </Button>
                 ) : (
                   <>
@@ -229,7 +272,7 @@ export function Header() {
                             setIsMenuOpen(false)
                         }}
                     >
-                      Đăng nhập
+                      {t('login')}
                     </Button>
                     <Button 
                         className="flex-1 bg-primary text-primary-foreground"
@@ -238,7 +281,7 @@ export function Header() {
                             setIsMenuOpen(false)
                         }}
                     >
-                      Đăng ký
+                      {t('register')}
                     </Button>
                   </>
                 )}

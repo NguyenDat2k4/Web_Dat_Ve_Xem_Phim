@@ -19,10 +19,17 @@ export async function POST(request: Request) {
 
     const isMatch = await (user as any).comparePassword(password)
     if (!isMatch) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      return NextResponse.json({ error: 'Thông tin đăng nhập không chính xác.' }, { status: 401 })
     }
 
-    const userData = { id: user._id, name: user.name, email: user.email, role: (user as any).role }
+    if (!user.isVerified) {
+      return NextResponse.json({ 
+        error: 'Tài khoản chưa được xác thực email. Vui lòng kiểm tra hộp thư của bạn.',
+        unverified: true 
+      }, { status: 403 })
+    }
+
+    const userData = { id: user._id.toString(), name: user.name, email: user.email, role: (user as any).role }
     await login(userData)
 
     return NextResponse.json(userData)
